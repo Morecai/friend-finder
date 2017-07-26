@@ -29,7 +29,24 @@ var friends = [{
             "5",
             "5"
         ],
-
+        "total": "44"
+    },
+    {
+        "name": "Yoda",
+        "image": "https://upload.wikimedia.org/wikipedia/en/6/6f/Yoda_Attack_of_the_Clones.png",
+        "responses": [
+            "5",
+            "5",
+            "5",
+            "5",
+            "5",
+            "5",
+            "5",
+            "5",
+            "5",
+            "5"
+        ],
+        "total": "50"
     }
 ]
 module.exports = friends;
