@@ -144,7 +144,7 @@
                 </select>
             </div>
             <br />
-            <button type="button" id="submit" class="btn btn-success btn-lg btn-block" data-toggle="modal" data-target="#modal"><i class="fa fa-check-square" aria-hidden="true"></i> Submit</button>
+            <button type="button" id="submit" class="btn btn-success btn-lg btn-block" data-toggle="modal" data-target="#modal">Submit</button>
         </form>
         <br />
         <footer class="footer">
@@ -153,84 +153,92 @@
             </div>
         </footer>
     </div>
-    <!--<div class="modal fade" id="modal" role="dialog">
+    <div class="modal fade" id="modal" role="dialog">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Oops, something went wrong!</h4>
+                    <h4 class="modal-title"></h4>
                 </div>
-                <div class="modal-body">Please make sure you have filled in all fields</div>
+                <div class="modal-body"></div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
-    </div>-->
+    </div>
     <script type="text/javascript">
-        $(document).ready(function() {
-            $("#submit").on("click", function() {
-                //form validation
-                function validateForm() {
-                    var isValid = true;
-                    $('.validate').each(function() {
-                        if ($(this).val() === '') {
-                            isValid = false;
-                            alert('Please enter all information');
-                        }
-                    });
-                    $('.form-control').each(function() {
-                        if ($(this).val() === "") {
-                            isValid = false;
-                        }
-                    });
-                    return isValid;
-                }
-
-                if (validateForm() == true) {
-
-                    var newFriend = {
-                        name: $('#name').val().trim(),
-                        profilePic: $('#photo').val().trim(),
-                        scores: [
-                            $('#q1').val(),
-                            $('#q2').val(),
-                            $('#q3').val(),
-                            $('#q4').val(),
-                            $('#q5').val(),
-                            $('#q6').val(),
-                            $('#q7').val(),
-                            $('#q8').val(),
-                            $('#q9').val(),
-                            $('#q10').val(),
-                        ]
-                    };
-                    var currentURL = window.location.origin;
-                    $.post(currentURL + "/api/friends", newFriend, function(data) {
-
-                        $("#matchName").text(data.name);
-                        $("#matchPic").attr("src", data.profilePic);
-                    });
-
-                    $('.modal').modal();
-                    $('#name').val("");
-                    $('#photo').val("");
-                    $('#q1').val("");
-                    $('#q2').val("");
-                    $('#q3').val("");
-                    $('#q4').val("");
-                    $('#q5').val("");
-                    $('#q6').val("");
-                    $('#q7').val("");
-                    $('#q8').val("");
-                    $('#q9').val("");
-                    $('#q10').val("");
-                } else {
-                    alert("Please fill out ALL fields before submitting survey!")
-                }
-
-            });
+        var nameVal, imageVal, q1Val, q2Val, q3Val, q4Val, q5Val, q6Val, q7Val, q8Val, q9Val, q10Val, newPerson;
+        $('#submit').on('click', function(event) {
+            event.preventDefault();
+            // set global variable values for multiple uses in this and other functions
+            nameVal = $('#name').val();
+            imageVal = $('#image').val();
+            q1Val = parseInt($('#q1').val());
+            q2Val = parseInt($('#q2').val());
+            q3Val = parseInt($('#q3').val());
+            q4Val = parseInt($('#q4').val());
+            q5Val = parseInt($('#q5').val());
+            q6Val = parseInt($('#q6').val());
+            q7Val = parseInt($('#q7').val());
+            q8Val = parseInt($('#q8').val());
+            q9Val = parseInt($('#q9').val());
+            q10Val = parseInt($('#q10').val());
+            newPerson = {
+                name: nameVal,
+                image: imageVal,
+                responses: [q1Val, q2Val, q3Val, q4Val, q5Val, q6Val, q7Val, q8Val, q9Val, q10Val],
+                total: q1Val + q2Val + q3Val + q4Val + q5Val + q6Val + q7Val + q8Val + q9Val + q10Val
+            };
+            // declare and set local variables
+            var modalTitle = $('.modal-title');
+            var modalBody = $('.modal-body');
+            var modal = $('#modal');
+            var apiFriendsRoute = '/api/friends';
+            if (formIsValid()) {
+                $.get(apiFriendsRoute, function(data) {
+                    var match = makeMatch(data);
+                    if (match.name !== undefined) {
+                        modalTitle.text('You have a match!');
+                        modalBody.html('<p class="strong">You\'re most compatible with:</p><p>' + match.name + '</p><img src="' + match.image + '" height="45">');
+                    } else {
+                        modalTitle.text('Too few friends');
+                        modalBody.text('Sorry, there are too few friends to match you with.');
+                    }
+                }).then(function() {
+                    modal.show();
+                    $('.form')[0].reset();
+                    $.post(apiFriendsRoute, newPerson);
+                });
+            } else {
+                modalTitle.text('Error');
+                modalBody.text('Please make sure all questions have been filled in.');
+                modal.show();
+            }
         });
+
+        function formIsValid() {
+            return (nameVal !== '' && imageVal !== '' && !isNaN(q1Val) && !isNaN(q2Val) && !isNaN(q3Val) && !isNaN(q4Val) &&
+                !isNaN(q5Val) && !isNaN(q6Val) && !isNaN(q7Val) && !isNaN(q8Val) && !isNaN(q9Val) && !isNaN(q10Val));
+        }
+
+        function makeMatch(data) {
+            var difference = 50;
+            var minName;
+            var minImage;
+            data.forEach(function(person) {
+                var localDiff = Math.abs(newPerson.total - person.total);
+                if (localDiff < difference) {
+                    difference = localDiff;
+                    minName = person.name;
+                    minImage = person.image;
+                }
+            });
+            return {
+                name: minName,
+                image: minImage
+            };
+        }
     </script>
 </body>
 
